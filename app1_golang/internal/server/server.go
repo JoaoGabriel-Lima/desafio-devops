@@ -31,14 +31,14 @@ func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
 	var valorCache, tempoParaExpirar, encontrado = s.cache.Get(staticTextKey)
 	if encontrado {
 		var tempoRestanteExpirar = time.Until(time.Unix(0, tempoParaExpirar))
-		log.Printf("CACHE HIT: texto estático encontrado no cache, tempo restante para expiração: %s", tempoRestanteExpirar)
+		log.Printf("CACHE HIT (GO): texto estático encontrado no cache, tempo restante para expiração: %s", tempoRestanteExpirar)
 		fmt.Fprintf(w, "Texto estático do cache: %s\n", valorCache)
 		return
 	}
-	log.Println("CACHE MISS: texto estático não encontrado no cache, usando valor padrão")
+	log.Println("CACHE MISS (GO): texto estático não encontrado no cache, usando valor padrão")
 	s.cache.Set(staticTextKey, "Texto estático", ttl)
 
-	fmt.Fprintln(w, "Texto estático")
+	fmt.Fprintln(w, "Texto estático (Go)")
 }
 
 func (s *Server) handleTime(w http.ResponseWriter, r *http.Request) {
@@ -47,15 +47,15 @@ func (s *Server) handleTime(w http.ResponseWriter, r *http.Request) {
 	var valorCache, tempoParaExpirar, encontrado = s.cache.Get(cacheKey)
 	if encontrado {
 		var tempoRestanteExpirar = time.Until(time.Unix(0, tempoParaExpirar))
-		log.Printf("CACHE HIT: hora atual encontrada no cache, tempo restante para expiração: %s", tempoRestanteExpirar)
-		fmt.Fprintf(w, "Hora guardada na cache: %s\n", valorCache)
+		log.Printf("CACHE HIT (GO): hora atual encontrada no cache, tempo restante para expiração: %s", tempoRestanteExpirar)
+		fmt.Fprintf(w, "Hora guardada na cache em memória: %s\n", valorCache)
 		return
 	}
 
-	log.Println("CACHE MISS: hora atual não encontrada no cache, gerando nova hora")
+	log.Println("CACHE MISS (GO): hora atual não encontrada no cache, gerando nova hora")
 	var horaAtual string = time.Now().Format(time.RFC1123)
 	s.cache.Set(cacheKey, horaAtual, ttl)
-	response := fmt.Sprintf("Hora atual do servidor: %s", horaAtual)
+	response := fmt.Sprintf("Hora atual do servidor (GO): %s", horaAtual)
 	fmt.Fprintln(w, response)
 }
 
