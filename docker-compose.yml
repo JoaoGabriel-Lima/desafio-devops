@@ -1,0 +1,25 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - go-app
+      - python-app
+
+  go-app:
+    build: ./app1_golang
+
+  python-app:
+    build: ./app2_python
+    environment:
+      - REDIS_HOST=redis 
+      - FLASK_APP=app.py
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis:alpine"

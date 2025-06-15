@@ -22,7 +22,7 @@ func New(c cache.Interface) *Server {
 }
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Desafio DevOps - João Gabriel Lima Marinho")
+	fmt.Fprintln(w, "Desafio DevOps - João Gabriel Lima Marinho - Servidor GO")
 }
 
 func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +38,7 @@ func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
 	log.Println("CACHE MISS (GO): texto estático não encontrado no cache, usando valor padrão")
 	s.cache.Set(staticTextKey, "Texto estático", ttl)
 
-	fmt.Fprintln(w, "Texto estático (Go)")
+	fmt.Fprintln(w, "Texto estático (GO)")
 }
 
 func (s *Server) handleTime(w http.ResponseWriter, r *http.Request) {
