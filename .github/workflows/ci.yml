@@ -1,0 +1,99 @@
+name: CI - Build e Teste (Go & Python)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Vou usar o path-filter para executar jobs diferentes se o que mudou foi no app Go ou no app Python
+jobs:
+  path-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      go-app: ${{ steps.filter.outputs.go-app }}
+      python-app: ${{ steps.filter.outputs.python-app }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Path Filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            go-app:
+              - 'app1_golang/**'
+            python-app:
+              - 'app2_python/**'
+  
+  # Job específico para o app Go, fazendo testes e build
+  teste-e-build-go:
+    runs-on: ubuntu-latest
+    needs: path-filter
+    if: needs.path-filter.outputs.go-app == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configurar Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+
+      - name: Instalar dependências Go
+        run: go mod download
+
+       # Rodar testes unitários com Go
+      - name: Rodar testes Unitários
+        run: go test -v ./...
+
+      - name: Bui8ld do Go
+        run: go build -v ./cmd/app
+        working-directory: ./app1_golang
+
+      # Retorna erro se houver vulnerabilidades críticas com o Trivy
+      - name: Escanear por vulnerabilidades do Go
+        uses: aquasecurity/trivy-action@v0.31.0
+        with:
+          scan-type: 'fs'
+          scan-ref: './app1_golang'
+          format: 'table'
+          severity: 'CRITICAL'
+          exit-code: '1'
+    
+  # Job específico para o app Python, fazendo testes e build
+  teste-e-build-python:
+    runs-on: ubuntu-latest
+    needs: path-filter
+    if: needs.path-filter.outputs.python-app == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Instalar dependências Python
+        run: pip install -r app2_python/requirements.txt
+
+      # Rodar testes unitários com Pytest
+      - name: Rodar testes Unitários (com Pytest)
+        run: |
+            pip install pytest
+            pytest
+        working-directory: ./app2_python
+
+      # Retorna erro se houver vulnerabilidades críticas com o Trivy
+      - name: Escanear por vulnerabilidades do Python
+        uses: aquasecurity/trivy-action@v0.31.0
+        with:
+          scan-type: 'fs'
+          scan-ref: './app2_python'
+          format: 'table'
+          severity: 'CRITICAL'
+          exit-code: '1'
