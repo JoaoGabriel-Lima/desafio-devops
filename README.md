@@ -199,22 +199,31 @@ http_total_requests{path="/", method="GET"}
 
 ```text
 desafio_devops/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                  # Pipeline CI/CD para Go e Python
+├── .gitignore                      # Arquivos ignorados pelo Git
 ├── docker-compose.yml              # Orquestração da infraestrutura
 ├── README.md                       # Este arquivo
 ├── assets/
+│   ├── dash_grafana.png           # Screenshot do dashboard Grafana
 │   └── infra_arq.png              # Diagrama de arquitetura
-├── app1_golang/                    # Aplicação Go
+├── app1_golang/                    # Aplicação Go (Standard Go Project Layout)
 │   ├── Dockerfile
 │   ├── go.mod
 │   ├── go.sum
 │   ├── cmd/app/main.go
 │   └── internal/
-│       ├── cache/cache.go          # Implementação do cache em memória
-│       └── server/server.go        # Servidor HTTP com métricas
+│       ├── cache/
+│       │   ├── cache.go           # Implementação do cache em memória
+│       │   └── cache_test.go      # Testes unitários do cache
+│       └── server/
+│           └── server.go          # Servidor HTTP com métricas
 ├── app2_python/                    # Aplicação Python
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   └── app.py                      # Flask app com métricas
+│   ├── app.py                     # Flask app com métricas
+│   └── test_app.py                # Testes unitários Python
 ├── nginx/                          # Reverse proxy e cache
 │   ├── Dockerfile
 │   └── nginx.conf                  # Configuração com proxy cache
@@ -229,13 +238,63 @@ desafio_devops/
 
 ## 🔄 Fluxo de Atualização de Componentes
 
+Este projeto implementa um fluxo de atualização de código que automatiza o processo de testes para os microsserviços. Uma pipeline foi projetada para lidar com cenários onde desenvolvedores fazem alterações em qualquer uma das aplicações (Go ou Python) e acionam automaticamente a pipeline de CI.
+
+### 🚀 Processo Detalhado de Atualização
+
+### 🚀 Processo de Atualização
+
+#### 1. Desenvolvimento Local
+
+- Desenvolvedor identifica um bug ou implementa nova feature
+- Realiza alterações no código da aplicação Go (`app1_golang/`) ou Python (`app2_python/`)
+- Executa testes localmente para validação inicial
+
+#### 2. Versionamento e Trigger da Pipeline
+
+- Commit das alterações com mensagem descritiva
+- Push para branch `main` ou criação de Pull Request
+- Pipeline CI é automaticamente acionada via GitHub Actions
+
+#### 3. Detecção Inteligente de Mudanças
+
+- Utiliza `dorny/paths-filter@v3` para detectar quais aplicações foram modificadas
+- Executa jobs específicos apenas para as aplicações alteradas:
+  - Se mudanças em `app1_golang/**` → executa job `teste-e-build-go`
+  - Se mudanças em `app2_python/**` → executa job `teste-e-build-python`
+
+#### 4. Validação Automatizada
+
+- **Testes Unitários**: Executados automaticamente para garantir qualidade
+  - Go: `go test -v ./...`
+  - Python: `pytest`
+- **Análise de Segurança**: Trivy identifica vulnerabilidades críticas
+- **Build**: Compilação/validação da aplicação
+
+#### 5. Falha e Recuperação
+
+- Pipeline falha se testes não passarem ou vulnerabilidades críticas forem encontradas
+- Desenvolvedor recebe notificação automática
+- Correções podem ser feitas e pipeline re-executada
+
+### 📊 Diagrama do Fluxo de Atualização
+<img src="./assets/fluxo_atualizacao.png" alt="Fluxo de Atualização de Componentes" width="800"/>
+
+### 🛠️ Configuração da Pipeline
+
+A pipeline está configurada no arquivo `.github/workflows/ci.yml` e inclui:
+
+- **Triggers**: Push para `main` e Pull Requests
+- **Path Filtering**: Execução condicional baseada nos arquivos alterados
+- **Paralelização**: Jobs independentes para Go e Python
+- **Security First**: Análise de vulnerabilidades com exit code 1 para críticas
+- **Feedback Rápido**: Notificações imediatas em caso de falha
+
 
 ## 🚀 Pontos de Melhoria
 
-### Melhorias do Aplicativo Go
-
+### Melhorias do Aplicativo Go 
 ### Melhorias do Aplicativo Python
-
 ### Melhorias Gerais da Infraestrutura
 
 
