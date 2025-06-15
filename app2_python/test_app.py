@@ -2,6 +2,8 @@ import unittest
 import time
 from app import app
 
+# Testes unitários para o App 2
+
 
 class TestApp(unittest.TestCase):
     def setUp(self):
