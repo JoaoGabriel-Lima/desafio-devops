@@ -6,6 +6,8 @@ services:
     build: ./nginx
     ports:
       - "80:80"
+    volumes:
+      - nginx_cache:/var/cache/nginx
     depends_on:
       - go-app
       - python-app
@@ -16,10 +18,7 @@ services:
   python-app:
     build: ./app2_python
     environment:
-      - REDIS_HOST=redis 
       - FLASK_APP=app.py
-    depends_on:
-      - redis
 
-  redis:
-    image: "redis:alpine"
+volumes:
+  nginx_cache:
