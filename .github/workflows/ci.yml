@@ -47,7 +47,8 @@ jobs:
         run: go mod download
         working-directory: ./app1_golang
 
-            # Rodar testes unitários com Go - name: Rodar testes Unitários
+       # Rodar testes unitários com Go
+      - name: Rodar testes Unitários
         run: go test -v ./...
 
       - name: Bui8ld do Go
