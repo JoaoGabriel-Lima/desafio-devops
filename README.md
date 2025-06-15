@@ -9,6 +9,20 @@
 
 Este repositório contém a implementação completa de um desafio DevOps com duas aplicações em linguagens diferentes, camadas de cache, observabilidade e infraestrutura automatizada.
 
+## 🔀 Implementações Disponíveis
+
+### Implementação Principal (Branch Main)
+
+- **Go**: Cache em memória interno
+- **Python**: Nginx Proxy Cache
+
+### Implementação Alternativa (Branch Redis)
+
+- **Go**: Cache em memória interno
+- **Python**: Redis Cache
+
+🔗 **[Ver implementação com Redis](https://github.com/JoaoGabriel-Lima/desafio-devops/tree/feat/redis?tab=readme-ov-file)**
+
 ## 📋 Objetivo do Desafio
 
 Criar uma infraestrutura robusta com:
@@ -127,6 +141,40 @@ location /python/ {
 - Inatividade: 2 minutos
 - Header `X-Cache-Status` para debug
 
+### 3. Cache Redis (Implementação Alternativa)
+
+**Implementação**: Cache distribuído usando Redis como armazenamento externo
+
+**Configuração**:
+
+```python
+import redis
+
+redis_client = Redis(host=os.environ.get('REDIS_HOST', 'localhost'), port=6379)
+DEFAULT_TTL = 60  # Tempo de expiração padrão para cache em segundos
+
+def static_text():
+    cache_key = "texto_estatico"
+    
+    cached_text = redis_client.get(cache_key)
+    if cached_text:
+        print(f"CACHE HIT (Python): texto estático encontrado no cache Redis, tempo restante: {redis_client.ttl(cache_key)}")
+        return Response(cached_text.decode('utf-8'), mimetype='text/plain')
+    
+    print("CACHE MISS (Python): texto estático não encontrado no cache Redis")
+    redis_client.set(cache_key, "Texto estático (Python)", ex=DEFAULT_TTL)
+    return Response("Texto estático (Python)", mimetype='text/plain')
+```
+
+**Características**:
+
+- TTL: 1 minuto (60 segundos)
+- Cache distribuído e persistente
+- Suporte a expiraçãoautomática com comando `EXPIRE`
+- Monitoramento de TTL com comando `TTL`
+- Logs detalhados de CACHE HIT/MISS
+- Configuração via variável de ambiente `REDIS_HOST`
+
 ## 📊 Observabilidade
 
 ### Métricas Coletadas
@@ -141,16 +189,20 @@ http_total_requests{path="/", method="GET"}
 
 ### Dashboard Grafana
 
+<img src="./assets/dash_grafana.png" alt="Dashboard Grafana" width="800"/>
+
 - **Go App**: Taxa de requisições por minuto
 - **Python App**: Taxa de requisições por minuto
 - Configuração automática via provisioning
 
 ## 🗂️ Estrutura do Projeto
 
-```
+```text
 desafio_devops/
 ├── docker-compose.yml              # Orquestração da infraestrutura
 ├── README.md                       # Este arquivo
+├── assets/
+│   └── infra_arq.png              # Diagrama de arquitetura
 ├── app1_golang/                    # Aplicação Go
 │   ├── Dockerfile
 │   ├── go.mod
@@ -189,13 +241,47 @@ desafio_devops/
 
 ## 🧪 Testes
 
-```bash
-# Testar cache do Go (10 segundos)
-curl http://localhost/go/time
-curl http://localhost/go/time  # Deve retornar valor do cache
+### Testando Cache do Go (10 segundos)
 
-# Testar cache do Nginx (1 minuto)
+```bash
+# Primeira requisição (CACHE MISS)
+curl http://localhost/go/time
+
+# Segunda requisição imediata (CACHE HIT)
+curl http://localhost/go/time
+
+# Aguardar 10 segundos e fazer nova requisição (CACHE MISS)
+sleep 11
+curl http://localhost/go/time
+```
+
+### Testando Cache do Nginx (1 minuto)
+
+```bash
+# Primeira requisição (CACHE MISS)
 curl -H "X-Cache-Status: debug" http://localhost/python/time
+
+# Segunda requisição imediata (CACHE HIT)
+curl -H "X-Cache-Status: debug" http://localhost/python/time
+
+# Verificar status do cache no header
+curl -I http://localhost/python/time
+```
+
+### Validando Métricas
+
+```bash
+# Métricas da aplicação Go
+curl http://localhost/go/metrics
+
+# Métricas da aplicação Python
+curl http://localhost/python/metrics
+
+# Verificar Prometheus
+open http://localhost:9090
+
+# Verificar Grafana
+open http://localhost:3000
 ```
 
 ## 📝 Notas Técnicas
