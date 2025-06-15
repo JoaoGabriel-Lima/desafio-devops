@@ -50,6 +50,7 @@ jobs:
        # Rodar testes unitários com Go
       - name: Rodar testes Unitários
         run: go test -v ./...
+        working-directory: ./app1_golang
 
       - name: Bui8ld do Go
         run: go build -v ./cmd/app
