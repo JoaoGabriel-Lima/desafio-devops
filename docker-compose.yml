@@ -19,6 +19,30 @@ services:
     build: ./app2_python
     environment:
       - FLASK_APP=app.py
+      
+
+  ## Observabilidade
+  # Serviço do Prometheus
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - go-app
+      - python-app
+
+  # Serviço do Grafana
+  grafana:
+    image: grafana/grafana:9.5.3
+    volumes:
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/dashboards/:/etc/grafana/dashboards/
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
 
 volumes:
   nginx_cache:

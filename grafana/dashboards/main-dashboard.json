@@ -1,0 +1,28 @@
+{
+    "uid": "dashboard-principal",
+    "title": "Dashboard de Apps - Desafio DevOps",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Go App: Taxa de Requisições",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "rate(http_total_requests{job=\"go-app\"}[1m])"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Python App: Taxa de Requisições",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "targets": [
+          {
+            "expr": "rate(http_total_requests_total{job=\"python-app\"}[1m])"
+          }
+        ]
+      }
+    ]
+  }

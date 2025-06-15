@@ -7,9 +7,24 @@ import (
 	"time"
 
 	"github.com/JoaoGabriel-Lima/desafio_devops/app1/internal/cache"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const DEFAULT_CACHE_TTL = 10 * time.Second
+
+var httpTotalRequets = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "http_total_requests",
+		Help: "Número total de requisições HTTP recebidas",
+	},
+	[]string{"path", "method"},
+)
+
+func init() {
+	prometheus.MustRegister(httpTotalRequets)
+}
 
 type Server struct {
 	cache cache.Interface
@@ -22,10 +37,14 @@ func New(c cache.Interface) *Server {
 }
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
+	httpTotalRequets.WithLabelValues(r.URL.Path, r.Method).Inc()
+	
 	fmt.Fprintln(w, "Desafio DevOps - João Gabriel Lima Marinho - Servidor GO")
 }
 
 func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
+	httpTotalRequets.WithLabelValues(r.URL.Path, r.Method).Inc()
+
 	const staticTextKey string = "texto_estatico"
 	const ttl = DEFAULT_CACHE_TTL
 	var valorCache, tempoParaExpirar, encontrado = s.cache.Get(staticTextKey)
@@ -42,6 +61,8 @@ func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleTime(w http.ResponseWriter, r *http.Request) {
+	httpTotalRequets.WithLabelValues(r.URL.Path, r.Method).Inc()
+
 	const cacheKey string = "hora_atual"
 	const ttl = DEFAULT_CACHE_TTL
 	var valorCache, tempoParaExpirar, encontrado = s.cache.Get(cacheKey)
@@ -63,5 +84,6 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/", s.handleIndex)
 	mux.HandleFunc("/static-text", s.handleStaticText)
 	mux.HandleFunc("/time", s.handleTime)
+	mux.Handle("/metrics", promhttp.Handler())
 }
 
