@@ -28,9 +28,10 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
 	const staticTextKey string = "texto_estatico"
 	const ttl = DEFAULT_CACHE_TTL
-	var valorCache, encontrado = s.cache.Get(staticTextKey)
+	var valorCache, tempoParaExpirar, encontrado = s.cache.Get(staticTextKey)
 	if encontrado {
-		log.Println("CACHE HIT: texto estático encontrado no cache")
+		var tempoRestanteExpirar = time.Until(time.Unix(0, tempoParaExpirar))
+		log.Printf("CACHE HIT: texto estático encontrado no cache, tempo restante para expiração: %s", tempoRestanteExpirar)
 		fmt.Fprintf(w, "Texto estático do cache: %s\n", valorCache)
 		return
 	}
@@ -43,10 +44,11 @@ func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleTime(w http.ResponseWriter, r *http.Request) {
 	const cacheKey string = "hora_atual"
 	const ttl = DEFAULT_CACHE_TTL
-	var valorCache, encontrado = s.cache.Get(cacheKey)
+	var valorCache, tempoParaExpirar, encontrado = s.cache.Get(cacheKey)
 	if encontrado {
-		log.Println("CACHE HIT: hora atual encontrada no cache")
-		fmt.Fprintf(w, "Hora atual do cache: %s\n", valorCache)
+		var tempoRestanteExpirar = time.Until(time.Unix(0, tempoParaExpirar))
+		log.Printf("CACHE HIT: hora atual encontrada no cache, tempo restante para expiração: %s", tempoRestanteExpirar)
+		fmt.Fprintf(w, "Hora guardada na cache: %s\n", valorCache)
 		return
 	}
 

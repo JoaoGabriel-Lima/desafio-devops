@@ -8,7 +8,7 @@ import (
 
 type Interface interface {
 	Set(chave string, valor string, ttl time.Duration)
-	Get(chave string) (string, bool)
+	Get(chave string) (string, int64, bool)
 }
 
 type cacheItem struct {
@@ -39,19 +39,19 @@ func (cm *CacheEmMemoria) Set(chave string, valor string, ttl time.Duration) {
 	log.Printf("CACHE SET: chave=%s, valor=%s, ttl=%s", chave, valor, ttl)
 }
 
-func (cm *CacheEmMemoria) Get(chave string) (string, bool) {
+func (cm *CacheEmMemoria) Get(chave string) (string, int64, bool) {
 	cm.RLock()
 	defer cm.RUnlock()
 
-	item, encontrado := cm.items[chave]
+	var item, encontrado = cm.items[chave]
 	if !encontrado {
-		return "", false
+		return "", 0, false
 	}
 
 	if time.Now().UnixNano() > item.expiracao {
 		delete(cm.items, chave)
-		return "", false
+		return "", 0, false
 	}
 
-	return item.valor, true
+	return item.valor, item.expiracao, true
 }
