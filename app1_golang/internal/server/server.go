@@ -12,8 +12,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// Tempo padrão de expiração do cache
 const DEFAULT_CACHE_TTL = 10 * time.Second
 
+
+// httpTotalRequets é um contador Prometheus para rastrear o número total de requisições HTTP recebidas
 var httpTotalRequets = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "http_total_requests",
@@ -22,29 +25,35 @@ var httpTotalRequets = prometheus.NewCounterVec(
 	[]string{"path", "method"},
 )
 
+
 func init() {
 	prometheus.MustRegister(httpTotalRequets)
 }
 
+// Server representa o servidor HTTP que lida com as rotas e interage com o cache
 type Server struct {
 	cache cache.Interface
 }
 
+// NewServer cria uma nova instância do servidor HTTP com o cache fornecido
 func New(c cache.Interface) *Server {
 	return &Server{
 		cache: c,
 	}
 }
 
+// handleIndex é o manipulador para a rota raiz ("/") que retorna uma mensagem de boas-vindas
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	httpTotalRequets.WithLabelValues(r.URL.Path, r.Method).Inc()
 	
 	fmt.Fprintln(w, "Desafio DevOps - João Gabriel Lima Marinho - Servidor GO")
 }
 
+// handleStaticText é o manipulador para a rota "/static-text" que retorna um texto estático
 func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
 	httpTotalRequets.WithLabelValues(r.URL.Path, r.Method).Inc()
 
+	// Faço uma verificação no cache para ver se o texto estático já foi armazenado, se sim, retorna o valor do cache, se não, armazena o valor no cache e retorna o valor
 	const staticTextKey string = "texto_estatico"
 	const ttl = DEFAULT_CACHE_TTL
 	var valorCache, tempoParaExpirar, encontrado = s.cache.Get(staticTextKey)
@@ -60,9 +69,11 @@ func (s *Server) handleStaticText(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Texto estático (GO)")
 }
 
+// handleTime é o manipulador para a rota "/time" que retorna a hora atual do servidor, armazenando em cache
 func (s *Server) handleTime(w http.ResponseWriter, r *http.Request) {
 	httpTotalRequets.WithLabelValues(r.URL.Path, r.Method).Inc()
 
+	// Faço uma verificação no cache para ver se a hora atual já foi armazenada, se sim, retorna o valor do cache, se não, armazena a hora atual no cache e retorna o valor
 	const cacheKey string = "hora_atual"
 	const ttl = DEFAULT_CACHE_TTL
 	var valorCache, tempoParaExpirar, encontrado = s.cache.Get(cacheKey)
@@ -80,6 +91,7 @@ func (s *Server) handleTime(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, response)
 }
 
+// RegisterRoutes registra as rotas do servidor HTTP
 func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/", s.handleIndex)
 	mux.HandleFunc("/static-text", s.handleStaticText)

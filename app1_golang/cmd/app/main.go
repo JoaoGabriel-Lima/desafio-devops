@@ -11,9 +11,12 @@ import (
 const SERVER_PORT string = ":8080"
 
 func main() {
+	// Instanciando o Mux para gerenciar as rotas HTTP e o cache para armazenar os dados
 	var mux *http.ServeMux = http.NewServeMux()	
 	var cache cache.Interface = cache.NewCache()
 	
+	// Registrando as rotas do servidor
+	// O servidor irá registrar as rotas e os manipuladores de requisições
 	var server = server.New(cache)
 	server.RegisterRoutes(mux)
 	
