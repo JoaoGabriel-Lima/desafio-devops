@@ -37,7 +37,7 @@ Criar uma infraestrutura robusta com:
 
 <img src="./assets/infra_arq.png" alt="Arquitetura do Desafio DevOps" width="800"/>
 
-- **Nota**: Apesar da camada de cache do App 2 (Python + Nginx Proxy Cache) estar desenhada abaixo da aplicação, o cache do nginx é executado antes do proxy pass, ou seja, diferente do App 1 (Go + Cache em Memória) o app python não tem controle da cache.
+- **Nota**: Apesar da camada de cache do App 2 (Python + Nginx Proxy Cache) estar desenhada abaixo da aplicação, o cache do nginx é executado antes do proxy pass, ou seja, diferente do App 1 (Go + Cache em Memória), o app python não tem controle da cache.
 
 ## 🚀 Como Executar
 
