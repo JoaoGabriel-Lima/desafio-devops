@@ -276,6 +276,8 @@ Foi implementado um fluxo de atualização de código que automatiza o processo 
 - Desenvolvedor recebe notificação automática
 - Correções podem ser feitas e pipeline re-executada
 
+<img src="./assets/pipeline.png" alt="Github Actions" width="800"/>
+
 ### 📊 Diagrama do Fluxo de Atualização
 
 <img src="./assets/fluxo_atualizacao.png" alt="Fluxo de Atualização de Componentes" width="800"/>
