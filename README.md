@@ -222,7 +222,7 @@ desafio_devops/
 ├── app2_python/                    # Aplicação Python
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   ├── app.py                     # Flask app com métricas
+│   ├── app.py                     # app 2 (python) com métricas
 │   └── test_app.py                # Testes unitários Python
 ├── nginx/                          # Reverse proxy e cache
 │   ├── Dockerfile
@@ -238,11 +238,9 @@ desafio_devops/
 
 ## 🔄 Fluxo de Atualização de Componentes
 
-Este projeto implementa um fluxo de atualização de código que automatiza o processo de testes para os microsserviços. Uma pipeline foi projetada para lidar com cenários onde desenvolvedores fazem alterações em qualquer uma das aplicações (Go ou Python) e acionam automaticamente a pipeline de CI.
+Este projeto implementa um fluxo de atualização de código que automatiza o processo de testes para os microsserviços. Uma pipeline foi feita para lidar com cenários onde desenvolvedores fazem alterações em qualquer uma das aplicações (Go ou Python) e acionam automaticamente a pipeline de CI.
 
-### 🚀 Processo Detalhado de Atualização
-
-### 🚀 Processo de Atualização
+### Processo de Atualização
 
 #### 1. Desenvolvimento Local
 
@@ -290,13 +288,38 @@ A pipeline está configurada no arquivo `.github/workflows/ci.yml` e inclui:
 - **Security First**: Análise de vulnerabilidades com exit code 1 para críticas
 - **Feedback Rápido**: Notificações imediatas em caso de falha
 
-
 ## 🚀 Pontos de Melhoria
 
-### Melhorias do Aplicativo Go 
-### Melhorias do Aplicativo Python
-### Melhorias Gerais da Infraestrutura
+### Melhorias do Aplicativo Go
 
+A implementação atual de cache em memória é funcional, mas em um cenário de produção com alta carga, ela apresentaria problemas de consumo de memória e performance.
+
+#### Melhoria 1.1: Limpeza Periódica de Itens Expirados
+
+- O Problema: Atualmente, um item expirado só é removido do mapa quando uma nova requisição para a mesma chave é feita. Se uma chave expira e nunca mais é acessada, ela permanece na memória para sempre, causando um "vazamento" de memória lento e contínuo.
+- A Solução: Implementar uma rotina em background (uma goroutine) que "varre" o cache periodicamente e remove ativamente os itens que já expiraram.
+
+#### Melhoria 1.2: Implementação de Cache Distribuído
+
+- O Problema: O cache em memória é limitado ao processo atual e não pode ser compartilhado entre múltiplas instâncias da aplicação. Isso significa que cada instância terá seu próprio cache, levando a inconsistências e desperdício de memória.
+- A Solução: Implementar um cache distribuído (Redis ou Memcached), permitindo escalabilidade horizontal.
+
+#### Melhoria 1.3: Limitação de Tamanho do Cache
+
+- O Problema: O cache em memória não tem limite de tamanho, o que pode levar a um consumo excessivo de memória se muitas chaves forem armazenadas, como por exemplo em um caso de expansão do app, onde novos endpoints são adicionados.
+- A Solução: Implementar uma política de limitação de tamanho do cache, como LRU (Least Recently Used), para garantir que o consumo de memória permaneça sob controle.
+
+### Melhorias do Aplicativo Python
+
+#### Melhoria 2.1: Prevenção de problemas de concorrência
+
+- O Problema: O cache Nginx é configurado para armazenar respostas, mas não há controle sobre concorrência. Se múltiplas requisições chegarem ao mesmo tempo, podem ocorrer problemas de concorrência, como múltiplas requisições tentando escrever no cache ao mesmo tempo.
+- A Solução: Implementar um mecanismo de bloqueio (lock) no Nginx para garantir que apenas uma requisição possa escrever no cache ao mesmo tempo.
+
+#### Melhoria 2.2: Mostrar conteúdo expirado em casos de falha
+
+- O Problema: Se a aplicação Python cair ou começar a retornar erros (500, 502, 504), o Nginx repassará esses erros para o usuário
+- A Solução: Configurar o Nginx para retornar o conteúdo expirado do cache em caso de falha na aplicação Python.
 
 ## 🧪 Testes
 
@@ -351,13 +374,3 @@ open http://localhost:3000
 - **Prometheus**: Scraping automático das métricas das aplicações
 - **Grafana**: Dashboards provisionados automaticamente
 
-<!-- ## 🤝 Contribuições
-
-Este projeto foi desenvolvido como parte de um desafio DevOps, demonstrando conhecimentos em:
-
-- Containerização com Docker
-- Orquestração com Docker Compose
-- Desenvolvimento em Go e Python
-- Estratégias de cache em múltiplas camadas
-- Observabilidade com Prometheus/Grafana
-- Reverse proxy com Nginx -->
