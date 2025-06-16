@@ -179,7 +179,7 @@ def static_text():
 
 ### Métricas Coletadas
 
-Ambas as aplicações expõem métricas no formato Prometheus:
+Ambas as aplicações expõem métricas com Prometheus:
 
 **Contador de Requisições HTTP**:
 
