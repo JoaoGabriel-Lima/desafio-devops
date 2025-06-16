@@ -51,7 +51,7 @@ Criar uma infraestrutura robusta com:
 git clone https://github.com/JoaoGabriel-Lima/desafio-devops.git
 cd desafio-devops
 
-# Iniciar toda a infraestrutura
+# Iniciar toda a infraestrutura (Lembre de estar com a engine do Docker rodando)
 docker-compose up -d
 
 # Verificar status dos containers
