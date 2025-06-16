@@ -1,4 +1,5 @@
 # Desafio DevOps - João Gabriel Lima Marinho
+
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://golang.org/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
@@ -48,7 +49,7 @@ Criar uma infraestrutura robusta com:
 ```bash
 # Clone o repositório
 git clone https://github.com/JoaoGabriel-Lima/desafio-devops.git
-cd desafio_devops
+cd desafio-devops
 
 # Iniciar toda a infraestrutura
 docker-compose up -d
@@ -222,7 +223,7 @@ desafio_devops/
 ├── app2_python/                    # App 2 (Python)
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   ├── app.py                     # App 2 (Python) com métricas
+│   ├── app.py                     # endpoints com métricas
 │   └── test_app.py                # Testes unitários do app Python
 ├── nginx/                          # Reverse proxy e cache
 │   ├── Dockerfile
