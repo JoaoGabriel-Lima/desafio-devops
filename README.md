@@ -47,7 +47,7 @@ Criar uma infraestrutura robusta com:
 
 ```bash
 # Clone o repositório
-git clone <repository-url>
+git clone https://github.com/JoaoGabriel-Lima/desafio-devops.git
 cd desafio_devops
 
 # Iniciar toda a infraestrutura
@@ -202,13 +202,13 @@ desafio_devops/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                  # Pipeline CI para Go e Python
-├── .gitignore                      # Arquivos ignorados pelo Git
+├── .gitignore                      
 ├── docker-compose.yml              # Orquestração da infraestrutura
-├── README.md                       # Este arquivo
+├── README.md                       
 ├── assets/
-│   ├── dash_grafana.png           # Screenshot do dashboard Grafana
-│   └── infra_arq.png              # Diagrama de arquitetura
-├── app1_golang/                    # Aplicação Go (Standard Go Project Layout)
+│   ├── dash_grafana.png           
+│   └── infra_arq.png              
+├── app1_golang/                    # App 1 (Standard Go Project Layout)
 │   ├── Dockerfile
 │   ├── go.mod
 │   ├── go.sum
@@ -218,18 +218,18 @@ desafio_devops/
 │       │   ├── cache.go           # Implementação do cache em memória
 │       │   └── cache_test.go      # Testes unitários do cache
 │       └── server/
-│           └── server.go          # Servidor HTTP com métricas
-├── app2_python/                    # Aplicação Python
+│           └── server.go          # Funções das Rotas HTTP
+├── app2_python/                    # App 2 (Python)
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   ├── app.py                     # app 2 (python) com métricas
-│   └── test_app.py                # Testes unitários Python
+│   ├── app.py                     # App 2 (Python) com métricas
+│   └── test_app.py                # Testes unitários do app Python
 ├── nginx/                          # Reverse proxy e cache
 │   ├── Dockerfile
 │   └── nginx.conf                  # Configuração com proxy cache
 ├── prometheus/                     # Monitoramento
 │   └── prometheus.yml
-└── grafana/                        # Visualização
+└── grafana/                        # Visualização das métricas
     ├── dashboards/main-dashboard.json
     └── provisioning/
         ├── dashboards/provider.yml
@@ -238,7 +238,7 @@ desafio_devops/
 
 ## 🔄 Fluxo de Atualização de Componentes
 
-Este projeto implementa um fluxo de atualização de código que automatiza o processo de testes para os microsserviços. Uma pipeline foi feita para lidar com cenários onde desenvolvedores fazem alterações em qualquer uma das aplicações (Go ou Python) e acionam automaticamente a pipeline de CI.
+Foi implementado um fluxo de atualização de código que automatiza o processo de testes para os microsserviços. Uma pipeline foi feita para lidar com cenários onde temos alterações em qualquer uma das aplicações (Go ou Python), acionando a pipeline de CI.
 
 ### Processo de Atualização
 
@@ -276,6 +276,7 @@ Este projeto implementa um fluxo de atualização de código que automatiza o pr
 - Correções podem ser feitas e pipeline re-executada
 
 ### 📊 Diagrama do Fluxo de Atualização
+
 <img src="./assets/fluxo_atualizacao.png" alt="Fluxo de Atualização de Componentes" width="800"/>
 
 ### 🛠️ Configuração da Pipeline
@@ -292,56 +293,56 @@ A pipeline está configurada no arquivo `.github/workflows/ci.yml` e inclui:
 
 ### Melhorias do Aplicativo Go
 
-A implementação atual de cache em memória é funcional, mas em um cenário de produção com alta carga, ela apresentaria problemas de consumo de memória e performance.
+A implementação atual de cache em memória é funcional, mas em um cenário de carga alta de requisições, ela apresentaria problemas de consumo de memória e performance
 
 #### Melhoria 1.1: Limpeza Periódica de Itens Expirados
 
-- O Problema: Atualmente, um item expirado só é removido do mapa quando uma nova requisição para a mesma chave é feita. Se uma chave expira e nunca mais é acessada, ela permanece na memória para sempre, causando um "vazamento" de memória lento e contínuo.
-- A Solução: Implementar uma rotina em background (uma goroutine) que "varre" o cache periodicamente e remove ativamente os itens que já expiraram.
+- Problema: Atualmente, um item que expirou só é removido do mapa quando uma nova requisição para a mesma chave acontece. Se uma chave expirar e nunca mais for acessada, ela fica na memória para sempre, causando um vazamento de memória lento e contínuo.
+- Solução: Implementar uma rotina em background (uma goroutine) que, de tempo em tempo, "varre" a cache e remove os itens que já expiraram.
 
 #### Melhoria 1.2: Implementação de Cache Distribuído
 
-- O Problema: O cache em memória é limitado ao processo atual e não pode ser compartilhado entre múltiplas instâncias da aplicação. Isso significa que cada instância terá seu próprio cache, levando a inconsistências e desperdício de memória.
-- A Solução: Implementar um cache distribuído (Redis ou Memcached), permitindo escalabilidade horizontal.
+- Problema: O cache em memória é limitado ao processo atual e não pode ser compartilhado entre múltiplas instâncias da aplicação. Isso significa que cada instância terá seu próprio cache, causandoinconsistências e desperdício de memória.
+- Solução: Implementar um cache distribuído (Redis ou Memcached), permitindo escalabilidade horizontal.
 
 #### Melhoria 1.3: Limitação de Tamanho do Cache
 
-- O Problema: O cache em memória não tem limite de tamanho, o que pode levar a um consumo excessivo de memória se muitas chaves forem armazenadas, como por exemplo em um caso de expansão do app, onde novos endpoints são adicionados.
-- A Solução: Implementar uma política de limitação de tamanho do cache, como LRU (Least Recently Used), para garantir que o consumo de memória permaneça sob controle.
+- Problema: O cache em memória não tem limite de tamanho, o que pode levar a um consumo excessivo de memória se muitas chaves forem armazenadas, como por exemplo em um caso de expansão do app, onde novos endpoints são adicionados.
+- Solução: Limitar o tamanho da cache e implementar uma política de substituição, como LRU (Least Recently Used), para garantir que o consumo de memória permaneça sob controle.
 
 ### Melhorias do Aplicativo Python
 
 #### Melhoria 2.1: Prevenção de problemas de concorrência
 
-- O Problema: O cache Nginx é configurado para armazenar respostas, mas não há controle sobre concorrência. Se múltiplas requisições chegarem ao mesmo tempo, podem ocorrer problemas de concorrência, como múltiplas requisições tentando escrever no cache ao mesmo tempo.
-- A Solução: Implementar um mecanismo de bloqueio (lock) no Nginx para garantir que apenas uma requisição possa escrever no cache ao mesmo tempo.
+- Problema: O cache Nginx é configurado para armazenar respostas, mas não há controle sobre concorrência. Se múltiplas requisições chegarem ao mesmo tempo, podem ocorrer problemas de concorrência, como múltiplas requisições tentando escrever no cache ao mesmo tempo.
+- Solução: Implementar um mecanismo de bloqueio (lock) no Nginx para garantir que apenas uma requisição possa escrever no cache ao mesmo tempo.
 
 #### Melhoria 2.2: Mostrar conteúdo expirado em casos de falha
 
-- O Problema: Se a aplicação Python cair ou começar a retornar erros (500, 502, 504), o Nginx repassará esses erros para o usuário
-- A Solução: Configurar o Nginx para retornar o conteúdo expirado do cache em caso de falha na aplicação Python.
+- Problema: Se a aplicação Python cair ou começar a retornar erros (500, 502, 504), o Nginx repassará esses erros para o usuário
+- Solução: Configurar o Nginx para retornar o conteúdo expirado do cache em caso de falha na aplicação Python.
 
 ### Melhorias de Infraestrutura
 
 #### Melhoria 3.1: Monitoramento de Performance
 
-- O Problema: Atualmente, as métricas coletadas são básicas e não fornecem insights detalhados sobre a performance das aplicações.
-- A Solução: Implementar métricas adicionais, como latência de requisições, taxa de erro, além da relação de HIT/MISS da cache para ambas as aplicações, configurando o Prometheus para coletar essas métricas e o Grafana para visualizá-las, além de alertas para anomalias.
+- Problema: Atualmente, as métricas coletadas são básicas e não fornecem insights detalhados sobre a performance das aplicações.
+- Solução: Implementar métricas adicionais, como latência de requisições, taxa de erro, além da relação de HIT/MISS da cache para ambas as aplicações, configurando o Prometheus para coletar essas métricas e o Grafana para visualizá-las, além de alertas para anomalias.
 
 #### Melhoria 3.2: Escalabilidade Horizontal
 
-- O Problema: A infraestrutura atual não suporta escalabilidade horizontal de forma eficiente, especialmente para a aplicação Go.
-- A Solução: Implementar um balanceador de carga (como Traefik) para distribuir requisições entre múltiplas instâncias da aplicação Go, além de configurar o cache distribuído para que todas as instâncias compartilhem o mesmo cache.
+- Problema: A infraestrutura atual não suporta escalabilidade horizontal de forma eficiente, especialmente para a aplicação Go.
+- Solução: Implementar um balanceador de carga (como Traefik) para distribuir requisições entre múltiplas instâncias da aplicação Go, além de configurar o cache distribuído para que todas as instâncias compartilhem o mesmo cache.
 
 #### Melhoria 3.3: Implementação de um pipeline de CD
 
-- O Problema: A infraestrutura atual não possui um pipeline de Continuous Deployment (CD) para automatizar o deploy das aplicações.
-- A Solução: Implementar um pipeline de CD que automatize o deploy das aplicações Go e Python, utilizando ferramentas como ArgoCD ou FluxCD para gerenciar o estado desejado da infraestrutura ou conectando diretamente ao servidor utilizando scripts de deploy.
+- Problema: A infraestrutura atual não possui um pipeline de Continuous Deployment (CD) para automatizar o deploy das aplicações.
+- Solução: Implementar um pipeline de CD que automatize o deploy das aplicações Go e Python, utilizando ferramentas como ArgoCD ou FluxCD para gerenciar o estado desejado da infraestrutura ou conectando diretamente ao servidor utilizando scripts de deploy.
 
 #### Melhoria 3.4: Evolução do Docker Compose para um orquestrador de contêineres
 
-- O Problema: O Docker Compose é excelente para ambientes de um único nó, mas não oferece funcionalidades avançadas de escalabilidade, auto-recuperação e gestão de rede complexa.
-- A Solução: Para um cenário de produção real com alta disponibilidade, migrar a infraestrutura para um orquestrador de contêineres como Kubernetes ou Docker Swarm, que oferece recursos avançados como auto-escalabilidade, balanceamento de carga e recuperação automática de falhas.
+- Problema: O Docker Compose é excelente para ambientes de um único nó, mas não oferece funcionalidades avançadas de escalabilidade, auto-recuperação e gestão de rede complexa.
+- Solução: Para um cenário de produção real com alta disponibilidade, migrar a infraestrutura para um orquestrador de contêineres como Kubernetes ou Docker Swarm, que oferece recursos avançados como auto-escalabilidade, balanceamento de carga e recuperação automática de falhas.
 
 ## 🧪 Testes
 
@@ -395,4 +396,3 @@ open http://localhost:3000
 - **Nginx**: Configurado como reverse proxy com cache layer
 - **Prometheus**: Scraping automático das métricas das aplicações
 - **Grafana**: Dashboards provisionados automaticamente
-
