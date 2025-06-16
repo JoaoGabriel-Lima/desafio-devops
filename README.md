@@ -201,7 +201,7 @@ http_total_requests{path="/", method="GET"}
 desafio_devops/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                  # Pipeline CI/CD para Go e Python
+│       └── ci.yml                  # Pipeline CI para Go e Python
 ├── .gitignore                      # Arquivos ignorados pelo Git
 ├── docker-compose.yml              # Orquestração da infraestrutura
 ├── README.md                       # Este arquivo
