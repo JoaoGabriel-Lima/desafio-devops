@@ -321,6 +321,28 @@ A implementação atual de cache em memória é funcional, mas em um cenário de
 - O Problema: Se a aplicação Python cair ou começar a retornar erros (500, 502, 504), o Nginx repassará esses erros para o usuário
 - A Solução: Configurar o Nginx para retornar o conteúdo expirado do cache em caso de falha na aplicação Python.
 
+### Melhorias de Infraestrutura
+
+#### Melhoria 3.1: Monitoramento de Performance
+
+- O Problema: Atualmente, as métricas coletadas são básicas e não fornecem insights detalhados sobre a performance das aplicações.
+- A Solução: Implementar métricas adicionais, como latência de requisições, taxa de erro, além da relação de HIT/MISS da cache para ambas as aplicações, configurando o Prometheus para coletar essas métricas e o Grafana para visualizá-las, além de alertas para anomalias.
+
+### Melhoria 3.2: Escalabilidade Horizontal
+
+- O Problema: A infraestrutura atual não suporta escalabilidade horizontal de forma eficiente, especialmente para a aplicação Go.
+- A Solução: Implementar um balanceador de carga (como Traefik) para distribuir requisições entre múltiplas instâncias da aplicação Go, além de configurar o cache distribuído para que todas as instâncias compartilhem o mesmo cache.
+
+### Melhoria 3.3: Implementação de um pipeline de CD
+
+- O Problema: A infraestrutura atual não possui um pipeline de Continuous Deployment (CD) para automatizar o deploy das aplicações.
+- A Solução: Implementar um pipeline de CD que automatize o deploy das aplicações Go e Python, utilizando ferramentas como ArgoCD ou FluxCD para gerenciar o estado desejado da infraestrutura ou conectando diretamente ao servidor utilizando scripts de deploy.
+
+#### Melhoria 3.4: Evolução do Docker Compose para um orquestrador de contêineres
+
+- O Problema: O Docker Compose é excelente para ambientes de um único nó, mas não oferece funcionalidades avançadas de escalabilidade, auto-recuperação e gestão de rede complexa.
+- A Solução: Para um cenário de produção real com alta disponibilidade, migrar a infraestrutura para um orquestrador de contêineres como Kubernetes ou Docker Swarm, que oferece recursos avançados como auto-escalabilidade, balanceamento de carga e recuperação automática de falhas.
+
 ## 🧪 Testes
 
 ### Testando Cache do Go (10 segundos)
